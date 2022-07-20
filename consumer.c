@@ -56,7 +56,6 @@ void * Producer( void * arg )
 	printf( "Producer created\n" );
 
 	char c;
-	//FILE *fp;
 	int i = 0;
 	
 	fp = fopen("message.txt", "r");
@@ -69,8 +68,6 @@ void * Producer( void * arg )
 		{
 			break;
 		}
-		//printf("%c", c);
-		//s1[i++] = c;
 		printf("%c\n", c);
 		sem_post( &buffer_length );
 		sem_getvalue( &buffer_length, &val);
@@ -81,25 +78,24 @@ void * Producer( void * arg )
 	
 	sleep( 2 );
 	
-	//}
-		// Only produce a new customer if we check out an exiting customer
+    // Only produce a new customer if we check out an exiting customer
 		
-		/*
-		sem_wait( &customer_checked_out );
+    /*
+    sem_wait( &customer_checked_out );
 
-        int new_customers = rand( ) % 10; 
-        customers_waiting += new_customers; 
+    int new_customers = rand( ) % 10; 
+    customers_waiting += new_customers; 
 
-		printf( "Adding %d customers to the line\n", new_customers ); 
-		printf( "%d customer waiting in line\n", customers_waiting );
+	printf( "Adding %d customers to the line\n", new_customers ); 
+	printf( "%d customer waiting in line\n", customers_waiting );
 
-		// Notify the cashiers that we've added a new customer to the lineA
-		int i;
-		for( i = 0; i < new_customers; i++ )
-		{
-			sem_post( &customers_in_line );
-		}
-		*/
+	// Notify the cashiers that we've added a new customer to the lineA
+	int i;
+	for( i = 0; i < new_customers; i++ )
+	{
+		sem_post( &customers_in_line );
+	}
+	*/
 
     // Sleep a little bit so we can read the output on the screen
     //sleep( 2 );
@@ -112,35 +108,37 @@ void * Consumer( void * arg )
 
 	int i = 0;
 
-//for(i = 0; i < 3; i++)
-//{
-	//	printf("%c", array[i]);
-		//i++;
-	//}
-	//sleep(3);
+    /*
+    for(i = 0; i < 3; i++)
+    {
+	    printf("%c", array[i]);
+	    i++;
+	}
+	sleep(3);
 	
-	//while( c != EOF || val != 0 )
-	//{
-		//sem_wait( &buffer_length );
-		//sem_getvalue( &buffer_length, &val);
-		//printf("consumer: %s\n", c);
+	while( c != EOF || val != 0 )
+	{
+		sem_wait( &buffer_length );
+		sem_getvalue( &buffer_length, &val);
+		printf("consumer: %s\n", c);
 	
 		// Wait here for a customer to appear in line
-		//sem_wait( &customers_in_line );
+		sem_wait( &customers_in_line );
 
-		//customers_waiting --;
+		customers_waiting --;
 
 		// Check to make sure we haven't reduced the customer count
 		// to below 0.  If we have then crash
-		//assert( customers_waiting >= 0 );
+		assert( customers_waiting >= 0 );
 
-		//printf( "Checking out customer. %d customers left in line\n", customers_waiting );
+		printf( "Checking out customer. %d customers left in line\n", customers_waiting );
 
-		//sem_post( &customer_checked_out );
+		sem_post( &customer_checked_out );
 
 		// Sleep a little bit so we can read the output on the screen
-		//sleep( 1 );
-	//}
+		sleep( 1 );
+	}
+    */
 }
 
 int main( int argc, char *argv[] ) 
@@ -161,13 +159,13 @@ int main( int argc, char *argv[] )
 	pthread_join( producer_tid, NULL );
 	pthread_join( consumer_tid, NULL );
 	
-	//if( s1 )
-	//{
-	//	free( s1 );
-	//}
+    /*
+	if( s1 )
+	{
+	    free( s1 );
+	}
 
-	//pthread_exit(NULL);
-
-	//return 0;
-
+	pthread_exit(NULL);
+    */
+	return 0;
 }
