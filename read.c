@@ -42,9 +42,9 @@
 
 sem_t mutex;
 sem_t customer_checked_out, customers_in_line;
-int customers_waiting = INITIAL_CUSTOMERS ;
+int customers_waiting = INITIAL_CUSTOMERS;
 
-FILE *fp;
+FILE * fp;
 
 //char c;
 sem_t buffer_length, sem2;
@@ -55,98 +55,92 @@ bool full = false;
 bool more;
 int count = 0;
 
-void * Producer( void * arg )
+void * Producer(void * arg)
 {
+  char c;
+  int i = 0;
 
-	char c;
-	int i = 0;
-	
-	if((fp = fopen("message.txt", "r"))==NULL)
+  if ((fp = fopen("message.txt", "r")) == NULL)
+  {
+    printf("ERROR: can’t open message.txt!\n");
+    return 0;
+  }
+
+  do
+  {
+    char c = fgetc(fp);
+    // If c hits an EOF, the program will end by breaking out of this loop
+    if (c == EOF)
     {
-        printf("ERROR: can’t open message.txt!\n");
-        return 0;
+      more == false;
+      break;
+    }
+    more = true;
+    // If the count is bigger than size 5, then go back to consumer to let it
+    // consume the 5 chars in the array. Let it print back
+    // to the screen and then let it come back and do it again
+    // until it hits an EOF.
+    if (count > BUFFER)
+    {
+      full == true;
+      count = 0;
+      sem_wait( & buffer_length);
+    }
+    // If full and more are both true, then we can reset the count for the buffer size and give it to the consumer to consume
+    if ((full == true) && (more == true))
+    {
+      //full == true;
+      count = 0;
+      sem_post( & buffer_length);
     }
 
-	do
-	{
-		char c = fgetc(fp);
-		// If c hits an EOF, the program will end by breaking out of this loop
-		if( c == EOF)
-		{
-			more == false;
-			break;
-		}
-		more = true;
-		// If the count is bigger than size 5, then go back to consumer to let it
-		// consume the 5 chars in the array. Let it print back
-		// to the screen and then let it come back and do it again
-		// until it hits an EOF.
-		if(count > BUFFER)
-		{
-			full == true;
-			count = 0;
-			sem_wait( &buffer_length );
-		}
-		// If full and more are both true, then we can reset the count for the buffer size and give it to the consumer to consume
-		if((full == true) && (more == true))
-		{
-			//full == true;
-			count = 0;
-			sem_post( &buffer_length );
-		}
-
-
-		array[i] = c;
-		i++;
-		count++;
-		sem_post( &sem2 );
-	} while(1);
+    array[i] = c;
+    i++;
+    count++;
+    sem_post( & sem2);
+  } while (1);
 }
 
-void * Consumer( void * arg ) 
+void * Consumer(void * arg)
 {
+  char letter;
+  int i = 0;
 
-	char letter;
-	int i = 0;
-	
-	if( ( letter = fgetc(fp)) == EOF)
-		{
-			sem_post( &customer_checked_out );
-		}
+  if ((letter = fgetc(fp)) == EOF)
+  {
+    sem_post( & customer_checked_out);
+  }
 
-	do
-	{
-		if(array[i] == 0)
-		{
-			break;
-		}
-		
-		
-		sem_wait( &sem2 );
-		printf("%c", array[i]);
-		fflush(stdout);
-		i++;
-		sleep(1);
-		sem_post( &buffer_length );
-	} while(1);
+  do
+  {
+    if (array[i] == 0)
+    {
+      break;
+    }
+
+    sem_wait( & sem2);
+    printf("%c", array[i]);
+    fflush(stdout);
+    i++;
+    sleep(1);
+    sem_post( & buffer_length);
+  } while (1);
 }
 
-int main( int argc, char *argv[] ) 
+int main(int argc, char * argv[])
 {
+  pthread_t producer_tid;
+  pthread_t consumer_tid;
 
-	pthread_t producer_tid;
-	pthread_t consumer_tid;
+  sem_init( & buffer_length, NONSHARED, BUFFER);
+  sem_init( & sem2, NONSHARED, 0); // empty queue
 
-	sem_init( &buffer_length, NONSHARED, BUFFER );
-	sem_init( &sem2, NONSHARED, 0 ); // empty queue
+  pthread_create( & producer_tid, NULL, Producer, NULL);
 
-	pthread_create( & producer_tid, NULL, Producer, NULL );
+  sleep(1);
 
-	sleep(1);
+  pthread_create( & consumer_tid, NULL, Consumer, NULL);
 
-	pthread_create( & consumer_tid, NULL, Consumer, NULL );
-
-	pthread_join( producer_tid, NULL );
-	pthread_join( consumer_tid, NULL );
+  pthread_join(producer_tid, NULL);
+  pthread_join(consumer_tid, NULL);
 }
-
