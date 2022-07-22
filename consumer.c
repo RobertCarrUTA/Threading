@@ -89,7 +89,7 @@ void * Producer(void * arg)
   printf( "Adding %d customers to the line\n", new_customers ); 
   printf( "%d customer waiting in line\n", customers_waiting );
 
-  // Notify the cashiers that we've added a new customer to the lineA
+  // Notify the cashiers that we've added a new customer to the line
   int i;
   for( i = 0; i < new_customers; i++ )
   {
